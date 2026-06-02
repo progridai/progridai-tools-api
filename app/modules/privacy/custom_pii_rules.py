@@ -22,7 +22,9 @@ COMMON_SAFE_TERMS = {
 CUSTOM_PERSON_NAMES = {
     "Rodrigo",
     "Rodrigo Goulart",
-    "Rodrigo Goulart da Rosa"
+    "Rodrigo Goulart da Rosa",
+    "Maurício",
+    "Mauricio"
 }
 
 rg_pattern = Pattern(
