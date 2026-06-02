@@ -27,15 +27,21 @@ CUSTOM_PERSON_NAMES = {
     "Mauricio"
 }
 
-rg_pattern = Pattern(
-    name="rg_pattern",
-    regex=r"\b\d{1,2}\.?\d{3}\.?\d{3}-?[\dXx]\b",
-    score=0.75
+rg_pattern_strict = Pattern(
+    name="rg_pattern_strict",
+    regex=r"\b\d{1,3}\.\d{3}\.\d{3}-[\dXx]\b",
+    score=0.85
+)
+
+rg_pattern_unformatted = Pattern(
+    name="rg_pattern_unformatted",
+    regex=r"\b\d{5,14}[Xx]?\b",
+    score=0.60
 )
 
 rg_recognizer = PatternRecognizer(
     supported_entity="RG",
-    patterns=[rg_pattern],
+    patterns=[rg_pattern_strict, rg_pattern_unformatted],
     context=[
         "rg",
         "registro geral",

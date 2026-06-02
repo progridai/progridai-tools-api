@@ -47,7 +47,8 @@ ENTITIES_TO_DETECT = [
 MIN_ENTITY_SCORE = {
     "PERSON": 0.85,
     "LOCATION": 0.85,
-    "ORGANIZATION": 0.85
+    "ORGANIZATION": 0.85,
+    "RG": 0.80
 }
 
 def _map_entity_type(entity_type: str) -> str:
@@ -115,7 +116,7 @@ class PrivacyService:
         filtered = []
         for res in results:
             mapped_type = _map_entity_type(res.entity_type)
-            if mapped_type in ["CPF", "CNPJ", "EMAIL", "PHONE", "RG"]:
+            if mapped_type in ["CPF", "CNPJ", "EMAIL", "PHONE"]:
                 filtered.append(res)
                 continue
                 
