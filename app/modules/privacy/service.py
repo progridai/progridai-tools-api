@@ -10,6 +10,12 @@ from app.modules.privacy.schemas import (
     ValidateRequest, ValidateResponse,
     RestoreRequest, RestoreResponse
 )
+from app.modules.privacy.custom_pii_rules import (
+    register_custom_recognizers,
+    is_safe_short_message,
+    should_ignore_result,
+    COMMON_SAFE_TERMS
+)
 from app.shared.exceptions import MapNotFoundException
 import re
 
@@ -23,6 +29,7 @@ nlp_engine = provider.create_engine()
 
 analyzer = AnalyzerEngine(nlp_engine=nlp_engine, supported_languages=["pt"])
 add_custom_recognizers(analyzer)
+register_custom_recognizers(analyzer)
 anonymizer = AnonymizerEngine()
 
 # Entities we want to detect based on the requirements
@@ -33,7 +40,8 @@ ENTITIES_TO_DETECT = [
     "EMAIL_ADDRESS",
     "PHONE_NUMBER",
     "CPF",
-    "CNPJ"
+    "CNPJ",
+    "RG"
 ]
 
 MIN_ENTITY_SCORE = {
@@ -58,6 +66,7 @@ class PrivacyService:
             "CNPJ": 60,
             "EMAIL": 50,
             "PHONE": 40,
+            "RG": 35,
             "PERSON": 30,
             "ORGANIZATION": 20,
             "LOCATION": 10
@@ -106,7 +115,7 @@ class PrivacyService:
         filtered = []
         for res in results:
             mapped_type = _map_entity_type(res.entity_type)
-            if mapped_type in ["CPF", "CNPJ", "EMAIL", "PHONE"]:
+            if mapped_type in ["CPF", "CNPJ", "EMAIL", "PHONE", "RG"]:
                 filtered.append(res)
                 continue
                 
@@ -117,12 +126,17 @@ class PrivacyService:
 
     @staticmethod
     def detect(request: DetectRequest) -> DetectResponse:
+        if is_safe_short_message(request.text):
+            return DetectResponse(hasSensitiveData=False, entities=[])
+
         results = analyzer.analyze(
             text=request.text,
             entities=ENTITIES_TO_DETECT,
-            language="pt"
+            language="pt",
+            allow_list=list(COMMON_SAFE_TERMS)
         )
         
+        results = [r for r in results if not should_ignore_result(request.text, r)]
         results = PrivacyService._filter_by_score(results)
         results = PrivacyService._resolve_overlaps(results)
         
@@ -143,12 +157,21 @@ class PrivacyService:
 
     @staticmethod
     def sanitize(request: SanitizeRequest) -> SanitizeResponse:
+        if is_safe_short_message(request.text):
+            return SanitizeResponse(
+                sanitizedText=request.text,
+                blocked=False,
+                entities=[]
+            )
+
         results = analyzer.analyze(
             text=request.text,
             entities=ENTITIES_TO_DETECT,
-            language="pt"
+            language="pt",
+            allow_list=list(COMMON_SAFE_TERMS)
         )
 
+        results = [r for r in results if not should_ignore_result(request.text, r)]
         results = PrivacyService._filter_by_score(results)
 
         if not results:
@@ -201,9 +224,11 @@ class PrivacyService:
         validation_results = analyzer.analyze(
             text=masked_text,
             entities=ENTITIES_TO_DETECT,
-            language="pt"
+            language="pt",
+            allow_list=list(COMMON_SAFE_TERMS)
         )
         
+        validation_results = [r for r in validation_results if not should_ignore_result(masked_text, r)]
         validation_results = PrivacyService._filter_by_score(validation_results)
         validation_results = PrivacyService._filter_real_entities(sanitized_text, validation_results)
         blocked = len(validation_results) > 0
@@ -234,15 +259,24 @@ class PrivacyService:
 
     @staticmethod
     def validate(request: ValidateRequest) -> ValidateResponse:
+        if is_safe_short_message(request.text):
+            return ValidateResponse(
+                valid=True,
+                blocked=False,
+                message="Nenhum dado sensível real detectado."
+            )
+
         token_pattern = re.compile(r"\[[A-Z]+_\d+\]")
         masked_text = token_pattern.sub(lambda m: ' ' * len(m.group(0)), request.text)
         
         results = analyzer.analyze(
             text=masked_text,
             entities=ENTITIES_TO_DETECT,
-            language="pt"
+            language="pt",
+            allow_list=list(COMMON_SAFE_TERMS)
         )
         
+        results = [r for r in results if not should_ignore_result(masked_text, r)]
         results = PrivacyService._filter_by_score(results)
         results = PrivacyService._resolve_overlaps(results)
         results = PrivacyService._filter_real_entities(request.text, results)
