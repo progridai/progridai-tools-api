@@ -20,22 +20,35 @@ async def list_auditorias(
 ):
     """
     Lista registros de auditoria com paginação e filtros opcionais.
+    Se nenhuma data for informada, busca automaticamente os registros de hoje.
     """
-    total, items = await service.list_auditorias(
-        db=db,
-        skip=skip,
-        limit=limit,
-        nome_app=nome_app,
-        id_requisicao=id_requisicao,
-        start_date=start_date,
-        end_date=end_date
-    )
-    return {
-        "total": total,
-        "items": items,
-        "limit": limit,
-        "offset": skip
-    }
+    if start_date is None:
+        start_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    if end_date is None:
+        end_date = datetime.now().replace(hour=23, minute=59, second=59, microsecond=999999)
+
+    try:
+        total, items = await service.list_auditorias(
+            db=db,
+            skip=skip,
+            limit=limit,
+            nome_app=nome_app,
+            id_requisicao=id_requisicao,
+            start_date=start_date,
+            end_date=end_date
+        )
+        return {
+            "total": total,
+            "items": items,
+            "limit": limit,
+            "offset": skip
+        }
+    except Exception as e:
+        # Retorna erro 503 em vez de 500 para deixar claro que é o banco
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, 
+            detail=f"Não foi possível conectar ao banco de dados. Verifique a configuração DATABASE_URL. Erro: {str(e)}"
+        )
 
 @router.get("/{id}", response_model=schemas.AuditoriaResponse)
 async def get_auditoria(
@@ -45,7 +58,15 @@ async def get_auditoria(
     """
     Recupera um registro de auditoria pelo ID.
     """
-    auditoria = await service.get_auditoria(db=db, id=id)
-    if not auditoria:
-        raise HTTPException(status_code=404, detail="Auditoria não encontrada")
-    return auditoria
+    try:
+        auditoria = await service.get_auditoria(db=db, id=id)
+        if not auditoria:
+            raise HTTPException(status_code=404, detail="Auditoria não encontrada")
+        return auditoria
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, 
+            detail=f"Não foi possível conectar ao banco de dados. Erro: {str(e)}"
+        )
