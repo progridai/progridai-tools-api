@@ -6,3 +6,6 @@ presidio-analyzer
 presidio-anonymizer
 spacy
 python-dotenv
+sqlalchemy
+asyncpg
+greenlet

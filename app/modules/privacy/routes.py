@@ -1,5 +1,9 @@
 from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.database import get_db
 from app.core.security import get_api_key
+from app.modules.auditoria.schemas import AuditoriaCreate
+from app.modules.auditoria.service import create_auditoria
 from app.modules.privacy.schemas import (
     SanitizeRequest, SanitizeResponse,
     RestoreRequest, RestoreResponse,
@@ -13,8 +17,17 @@ from app.modules.privacy.token_store import delete_map
 router = APIRouter(prefix="/privacy", tags=["Privacy"], dependencies=[Depends(get_api_key)])
 
 @router.post("/sanitize", response_model=SanitizeResponse)
-def sanitize_text(request: SanitizeRequest):
-    return PrivacyService.sanitize(request)
+async def sanitize_text(request: SanitizeRequest, db: AsyncSession = Depends(get_db)):
+    response = PrivacyService.sanitize(request)
+    
+    # Save to auditoria
+    await create_auditoria(db, AuditoriaCreate(
+        texto_sanitizado=response.sanitizedText,
+        nome_app=request.nome_app,
+        id_requisicao=request.id_requisicao
+    ))
+    
+    return response
 
 @router.post("/restore", response_model=RestoreResponse)
 def restore_text(request: RestoreRequest):
