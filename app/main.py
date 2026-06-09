@@ -10,8 +10,11 @@ from app.core.database import engine, Base
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Cria as tabelas do banco de dados na inicialização
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+    except Exception as e:
+        print(f"Aviso: Não foi possível conectar ao banco de dados na inicialização: {e}")
     yield
 
 app = FastAPI(
