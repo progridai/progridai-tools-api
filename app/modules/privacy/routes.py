@@ -20,12 +20,15 @@ router = APIRouter(prefix="/privacy", tags=["Privacy"], dependencies=[Depends(ge
 async def sanitize_text(request: SanitizeRequest, db: AsyncSession = Depends(get_db)):
     response = PrivacyService.sanitize(request)
     
-    # Save to auditoria
-    await create_auditoria(db, AuditoriaCreate(
-        texto_sanitizado=response.sanitizedText,
-        nome_app=request.nome_app,
-        id_requisicao=request.id_requisicao
-    ))
+    # Save to auditoria (com try/except para não quebrar a sanitização se o banco falhar)
+    try:
+        await create_auditoria(db, AuditoriaCreate(
+            texto_sanitizado=response.sanitizedText,
+            nome_app=request.nome_app,
+            id_requisicao=request.id_requisicao
+        ))
+    except Exception as e:
+        print(f"Erro ao salvar auditoria: {e}")
     
     return response
 

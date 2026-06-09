@@ -4,10 +4,21 @@ from app.core.config import settings
 from app.modules.privacy.routes import router as privacy_router
 from app.modules.auditoria.routes import router as auditoria_router
 
+from contextlib import asynccontextmanager
+from app.core.database import engine, Base
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Cria as tabelas do banco de dados na inicialização
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    description="ProgridAI Tools API - Ferramentas reutilizáveis de IA"
+    description="ProgridAI Tools API - Ferramentas reutilizáveis de IA",
+    lifespan=lifespan
 )
 
 app.add_middleware(
