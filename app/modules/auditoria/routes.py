@@ -4,7 +4,6 @@ from typing import Optional
 from datetime import datetime
 
 from app.core.database import get_db
-from app.shared.responses import APIResponse
 from . import schemas, service
 
 router = APIRouter()
