@@ -24,6 +24,7 @@ async def sanitize_text(request: SanitizeRequest, db: AsyncSession = Depends(get
     try:
         await create_auditoria(db, AuditoriaCreate(
             texto_sanitizado=response.sanitizedText,
+            texto_original=request.text,
             nome_app=request.nome_app,
             id_requisicao=request.id_requisicao
         ))
