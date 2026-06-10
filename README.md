@@ -47,7 +47,7 @@ O projeto já contém um `Dockerfile` pronto para build, inclusive para platafor
 Crie um arquivo `.env` na raiz do projeto com base no `.env.example`:
 
 ```env
-API_KEY=progridai_7f8c9a2e4d6b1x9p3q8z5m0n2v6r4t1k
+API_KEY=
 ```
 
 A `API_KEY` é exigida no header `X-API-Key` para todos os endpoints `/privacy/*`.
