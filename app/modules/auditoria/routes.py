@@ -4,9 +4,10 @@ from typing import Optional
 from datetime import datetime
 
 from app.core.database import get_db
+from app.core.security import get_api_key
 from . import schemas, service
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_api_key)])
 
 @router.get("/", response_model=schemas.PaginatedAuditoriaResponse)
 async def list_auditorias(
