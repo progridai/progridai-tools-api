@@ -6,7 +6,6 @@ class AuditoriaBase(BaseModel):
     texto_sanitizado: str
     texto_original: Optional[str] = None
     nome_app: Optional[str] = Field("geral", max_length=100)
-    id_requisicao: Optional[str] = Field(None, max_length=100)
 
 class AuditoriaCreate(AuditoriaBase):
     pass
@@ -15,7 +14,6 @@ class AuditoriaUpdate(BaseModel):
     texto_sanitizado: Optional[str] = None
     texto_original: Optional[str] = None
     nome_app: Optional[str] = Field(None, max_length=100)
-    id_requisicao: Optional[str] = Field(None, max_length=100)
 
 class AuditoriaResponse(AuditoriaBase):
     id: int

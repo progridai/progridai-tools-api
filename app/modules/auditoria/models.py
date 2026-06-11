@@ -8,6 +8,5 @@ class AuditoriaTextoSanitizado(Base):
     id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
     data_criacao = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     nome_app = Column(String(100), server_default='geral', nullable=False)
-    id_requisicao = Column(String(100), nullable=True)
     texto_original = Column(Text, nullable=True)
     texto_sanitizado = Column(Text, nullable=False)

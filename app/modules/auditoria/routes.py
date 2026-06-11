@@ -13,7 +13,6 @@ async def list_auditorias(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     nome_app: Optional[str] = None,
-    id_requisicao: Optional[str] = None,
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     db: AsyncSession = Depends(get_db)
@@ -33,7 +32,6 @@ async def list_auditorias(
             skip=skip,
             limit=limit,
             nome_app=nome_app,
-            id_requisicao=id_requisicao,
             start_date=start_date,
             end_date=end_date
         )

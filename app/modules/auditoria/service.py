@@ -23,7 +23,6 @@ async def list_auditorias(
     skip: int = 0,
     limit: int = 100,
     nome_app: Optional[str] = None,
-    id_requisicao: Optional[str] = None,
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None
 ) -> Tuple[int, List[AuditoriaTextoSanitizado]]:
@@ -31,8 +30,6 @@ async def list_auditorias(
     
     if nome_app:
         query = query.where(AuditoriaTextoSanitizado.nome_app == nome_app)
-    if id_requisicao:
-        query = query.where(AuditoriaTextoSanitizado.id_requisicao == id_requisicao)
     if start_date:
         query = query.where(AuditoriaTextoSanitizado.data_criacao >= start_date)
     if end_date:

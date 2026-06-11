@@ -15,11 +15,7 @@ async def lifespan(app: FastAPI):
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-            # Tenta adicionar a coluna que estava faltando se a tabela já existia antes
-            try:
-                await conn.execute(text("ALTER TABLE auditoria_texto_sanitizado ADD COLUMN id_requisicao VARCHAR(100) NULL;"))
-            except Exception:
-                pass # A coluna já existe
+
     except Exception as e:
         print(f"Aviso: Não foi possível conectar ao banco de dados na inicialização: {e}")
     yield

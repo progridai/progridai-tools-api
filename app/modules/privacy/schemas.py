@@ -13,7 +13,6 @@ class SanitizeRequest(BaseModel):
     text: str = Field(..., description="The free text to be sanitized")
     restoreEnabled: bool = Field(False, description="If true, generates a token map for future restoration")
     nome_app: Optional[str] = Field("geral", description="Nome do app para auditoria", max_length=100)
-    id_requisicao: Optional[str] = Field(None, description="ID de requisição para auditoria", max_length=100)
 
 class SanitizeResponse(BaseModel):
     sanitizedText: str

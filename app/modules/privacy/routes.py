@@ -25,8 +25,7 @@ async def sanitize_text(request: SanitizeRequest, db: AsyncSession = Depends(get
         await create_auditoria(db, AuditoriaCreate(
             texto_sanitizado=response.sanitizedText,
             texto_original=request.text,
-            nome_app=request.nome_app,
-            id_requisicao=request.id_requisicao
+            nome_app=request.nome_app
         ))
     except Exception as e:
         print(f"Erro ao salvar auditoria: {e}")
